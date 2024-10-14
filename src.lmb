@@ -17,15 +17,3 @@ last(after):void
 	:print(after)
 - does not return
 ;
-
-- maybe 2 types of return
--   like one for returning on the stack
--   and another for returning in ebx or something
--   for like booleans and stuff
--   acually its 64 bits for ebx so everything but string lits
--   will be ok on registers
--   maybe store string literals on stack but return
--   the address in ebx?
--   thats kinda nice acually
--   yeaaaaahh good stuff
--   : ; - ( )
