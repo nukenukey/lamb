@@ -1,1 +1,1 @@
-just the source code / basic syntax for now, simple compiler should be done in a few weeks or so, definately minimal
+source code and mediocre compiler for the lamb programming language, more features / turing completeness to come
