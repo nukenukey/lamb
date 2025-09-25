@@ -1,0 +1,55 @@
+* lamb
+
+        lamb is a programming language I authored as an exercise to learn more about programming languages, compiler design, and deepen my understanding of computer science.
+
+        lamb is not a professional product and should not be used as if it is.
+
+        *I do not recommend usage of lamb for important work*
+
+* purpose of files
+
+** src.lmb
+
+        1) [[./src.lmb][src.lmb]] is the source code demonstrating what the current version of the lamb programming language can do
+
+           - .lmb is the file extension for lamb source files
+
+        2) [[./lamb.cpp][lamb.cpp]] is the source code for the lamb compiler
+
+           - this lamb compiler is made specifically to compile lamb source code to intel-style assembly that [[https://www.nasm.us/][nasm]] can assemble into executable binary for x86-64 Linux machines.
+
+        3) README.org
+
+           guess
+
+        4) [[./LICENSE][LICENSE]]
+
+           - a file containing the GNU public license(GPL).
+
+             - lamb is free and open source software.
+
+                This program is free software: you can redistribute it and/or modify
+                it under the terms of the GNU General Public License as published by
+                the Free Software Foundation, either version 3 of the License, or
+                (at your option) any later version.
+
+                This program is distributed in the hope that it will be useful,
+                but WITHOUT ANY WARRANTY; without even the implied warranty of
+                MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                GNU General Public License for more details.
+                You should have received a copy of the GNU General Public License
+                along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+* the future
+
+        - lamb is technically already turing complete and with college starting up I have less time to work on it. That being said, I still want to improve lamb and make a more capable compiler
+
+        - features to come
+
+          1. [ ] fully-fledged pointers
+
+          2. [ ] heap manipulation
+
+          3. [ ] type definitions
+
+          4. [ ] full syntax checking, not just errors
