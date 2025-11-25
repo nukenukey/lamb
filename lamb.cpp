@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -27,8 +28,8 @@ using namespace std;
 // feel free to me at <micklebubble22@gmail.com> if you have questions
 
 string specChars[] = { ":", ";", "(", ")", " ", "\t", "!", ",", ".", "\'", "\"", "`", "&" };
-bool show = false;
-ofstream newFile;
+// bool show = false;
+// ofstream newFile;
 
 struct morpheme {
 	string label;
@@ -56,7 +57,6 @@ void error(uint line, string in) {
 }
 
 void fatal(string in) {
-	newFile.close();
 	cerr << in << endl;
 	exit(1);
 }
@@ -70,9 +70,9 @@ bool special(string in) {
 	return false;
 }
 
-vector<morpheme> tokener (string in, uint lineC) {
+vector<morpheme> tokener (string in, uint lineC, bool debug) {
 	vector<morpheme> ret;
-	if (show) {
+	if (debug) {
 		cout << "tokenizing line " << lineC << endl;
 		cout << "peeks and buffs:" << endl;
 	}
@@ -145,7 +145,7 @@ uint stringLitCount = 0;
 unordered_map<uint, string> stringLitMap;
 unordered_map<string, vector<string>> params;
 
-vector<morpheme> lexer(vector<morpheme> in) {
+vector<morpheme> lexer(vector<morpheme> in, bool debug) {
 	in.shrink_to_fit();
 	if (in.empty())
 		return in;
@@ -231,7 +231,7 @@ vector<morpheme> lexer(vector<morpheme> in) {
 								continue;
 							temp.push_back(in[j].value);
 						}
-						if (show) {
+						if (debug) {
 							cout << "params:" << endl;
 							for (uint j = 0; j < temp.size(); j++) {
 								cout << "\t" << temp[j] << endl;
@@ -276,7 +276,7 @@ vector<morpheme> lexer(vector<morpheme> in) {
 							if (in[j].label.compare("cParen") == 0)
 								parens--;
 							if (in[j].label.compare("comma") == 0 || parens == 0) {
-								vector<morpheme> rec = lexer(temp);
+								vector<morpheme> rec = lexer(temp, debug);
 								for (uint o = 0; o < rec.size(); o++)
 									ret.push_back(rec[o]);
 								temp.clear();
@@ -298,7 +298,7 @@ vector<morpheme> lexer(vector<morpheme> in) {
 					for (uint j = i + 1; j < in.size(); j++)
 						toImport += in[j].value;
 					ret.push_back(moFact("import", toImport));
-					if (show)
+					if (debug)
 						cout << "  import:" << endl << toImport << endl;
 					break;
 				}
@@ -371,25 +371,19 @@ vector<morpheme> lexer(vector<morpheme> in) {
 vector<string> imports;
 bool needsImport = false;
 
-void importPls(string in) {
+void importPls(string in, bool debug, ifstream &configFile, ofstream &newFile) {
 	vector<string> ret;
-	ifstream configFile("/etc/lamb.conf");
 	if (!configFile.is_open()) {
-		fatal("/etc/lamb.conf does not exist");
+		fatal("config file does not exist (/etc/lamb.conf unless specified otherwise)");
 	}
 	string path;
 	while (getline(configFile, path)) {
-		if (path.substr(0, path.find(":")).compare("\"homeDirec\"") == 0) {
-			path = path.substr(path.find(":"));
-			path = path.substr(path.find("\"") + 1);
-			path = path.substr(0, path.find("\""));
-			if (path.back() != '/')
-				path += "/";
-			break;
+		if (path.substr(0, path.find(" ")).compare("lib") == 0) {
+			path = path.substr(path.find(" ") + 1);
 		}
 	}
 	if (path.empty()) {
-		fatal("/etc/lamb.conf must have `\"homeDirec\": \"/path/to/lamb/lib\"`");
+		fatal("config file must have `\"homeDirec\": \"/path/to/lamb/lib\"`");
 	}
 	for (string t; (bool)(in.find(".") % 1); t = in.substr(0, in.find("."))) {
 		in = in.substr(in.find(".") + 1);
@@ -397,7 +391,7 @@ void importPls(string in) {
 	}
 	path += in;
 	path = path.substr(0, path.length()) + ".asm";
-	if (show) {
+	if (debug) {
 		cout << "\t> importing from file " << path << endl;
 	}
 	ifstream importFile(path);
@@ -408,16 +402,13 @@ void importPls(string in) {
 		newFile << path << endl;
 }
 
-void commit(vector<morpheme> in, bool addLineIfNeeded) {
+void commit(vector<morpheme> in, bool addLineIfNeeded, ofstream &newFile, bool debug) {
 	in.shrink_to_fit();
 	if (in.empty())
 		return;
 	bool amp = false;
-	bool resing = false;
 	bool needsLine = false;
 	for (uint i = 0; i < in.size(); i++) {
-		if (resing)
-			newFile << "ret" << endl;
 		if (amp)
 			amp = false;
 		if (in[i].label.compare("amp") == 0) {
@@ -431,7 +422,6 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 				newFile << "mov ";
 			newFile << "rax, ";
 			needsLine = true;
-			resing = true;
 			i++;
 		}
 		if (in[i].label.compare("funDef") == 0) {
@@ -453,7 +443,7 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 		if (in[i].label.compare("import") == 0) {
 			imports.push_back(in[i].value);
 			needsImport = true;
-			if (show)
+			if (debug)
 				cout << "will import from: " << in[i].value << endl;
 			continue;
 		}
@@ -522,7 +512,7 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 				for (j = i + 1; in[j - 1].label.compare("endGiveParams") != 0; j++) {
 					temp.push_back(in[j]);
 				}
-				commit(temp, true);
+				commit(temp, true, newFile, debug);
 				newFile << "call " << in[i + j].value << endl;
 				newFile << "cmp rax, 1" << endl;
 			}
@@ -531,7 +521,7 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 				vector<morpheme> temp;
 				for (uint j = i + 1; j < in.size(); j++)
 					temp.push_back(in[j]);
-				commit(temp, true);
+				commit(temp, true, newFile, debug);
 				newFile << ", 1";
 			}
 			newFile << "jne if" << in[i].value << "End" << endl;
@@ -561,7 +551,7 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 						}
 						tempVec.push_back(in[o]);
 					}
-					commit(tempVec, true);
+					commit(tempVec, true, newFile, debug);
 					newFile << "call " << in[o].value << endl;
 					j = o;
 				}
@@ -598,7 +588,7 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 				else {
 					vector<morpheme> temp;
 					temp.push_back(in[j]);
-					commit(temp, true);
+					commit(temp, true, newFile, debug);
 				}
 				offset++;
 			}
@@ -610,11 +600,11 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 				vector<morpheme> temp;
 				for (uint j = i + 2; j < in.size(); j++)
 					temp.push_back(in[j]);
-				commit(temp, false);
+				commit(temp, false, newFile, debug);
 				newFile << "mov ";
 				vector<morpheme> tempier;
 				tempier.push_back(in[i + 1]);
-				commit(tempier, false);
+				commit(tempier, false, newFile, debug);
 				newFile << ", rax" << endl;
 			}
 			else {
@@ -623,15 +613,15 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 				if (in[i + 2].label.compare("param") == 0) {
 					newFile << "r8, ";
 					temp.push_back(in[i + 2]);
-					commit(temp, true);
+					commit(temp, true, newFile, debug);
 					newFile << "mov ";
 					temp[0] = in[i + 1];
-					commit(temp, false);
+					commit(temp, false, newFile, debug);
 					newFile << ", r8" << endl;
 				}
 				else {
 					temp.push_back(in[i + 1]);
-					commit(temp, false);
+					commit(temp, false, newFile, debug);
 					newFile << ", " << in[i + 2].value << endl;
 				}
 			}
@@ -649,22 +639,23 @@ void commit(vector<morpheme> in, bool addLineIfNeeded) {
 	}
 }
 
-void sof() {
+void sof(ofstream &newFile, bool debug) {
 	newFile << "section .text" << endl;
 	newFile << "global start" << endl;
-	if (show)
+	if (debug)
 		cout << "\t> start of file" << endl;
 }
 
-void eof() {	
+void eof(string configFilePath, ofstream &newFile, bool debug) {	
+	ifstream configFile(configFilePath);
 	if (needsImport) {
 		for (uint i = 0; i < imports.size(); i++) {
-			if (show)
+			if (debug)
 				cout << "importing from " << imports[i] << endl;
-			importPls(imports[i]);
+			importPls(imports[i], debug, configFile, newFile);
 		}
 	}
-	if (show)
+	if (debug)
 		cout << "end of file" << endl;
 	newFile << "start:" << endl;
 	newFile << "mov [origin], rbp" << endl;
@@ -701,31 +692,73 @@ void eof() {
 	}
 }
 
+struct options {
+    bool debug = false;
+	string oldFilePath = "";
+    string newFilePath = "";
+    string configFilePath = "";
+};
+
+void print_usage() {
+	cout << "Usage: lamb [-f <lamb source>] [-o <assembly file>] [-c <config file>] [-s]" << endl;
+	cout << "\t-f <lamb source>: specifies the file to retrieve the source code from" << endl;
+	cout << "\t-o <assembly file>: specifies the assembly file to write the compiled code to" << endl;
+	cout << "\t-c <config file>: specifies the config file to pull from, default is /etc/lamb.conf" << endl;
+	cout << "\t-d: specifies whether or not to annotate the stages of compilation" << endl;
+	cout << "\t-v: prints the version number and exits with code 0" << endl;
+}
+
+struct options getopts(int argc, char** argv) {
+    struct options ret;
+	int opt;
+	// extern char *optarg;
+	while ((opt = getopt(argc, argv, "c:f:o:dv")) != -1) {
+		switch (opt) {
+		case 'f':
+			ret.oldFilePath = optarg;
+			continue;
+		case 'o':
+			ret.newFilePath = optarg;
+			continue;
+		case 'c':
+			ret.configFilePath = optarg;
+			continue;
+		case 'd':
+			ret.debug = true;
+			continue;
+		case 'v':
+			cout << "0.1.1" << endl;
+			exit(0);
+		case 'h':
+		default:
+			print_usage();
+			continue;
+        }
+	}
+    if (ret.oldFilePath == "" ) {
+		print_usage();
+		fatal("");
+	}
+    if (ret.configFilePath == "")
+        ret.configFilePath = "/etc/lamb.conf";
+    return ret;
+}
+
 int main(int argc, char** argv){
-	if (argc < 3){
-		cerr << "\t> error: bad usage. use like: \"lamb <assembly file> <lmb file>\"" << endl;
-		exit(1);
-	}
-	if(argc >= 4){
-		if (((string)(argv[3])).compare("show") == 0) {
-			cout << "\t> show set to true" << endl;
-			show = true;
-		}
-	}
-	string path = argv[1];
-	newFile.open(path);
-	sof();
-	ifstream oldFile(argv[2]);
+    struct options opts = getopts(argc, argv);
+	ifstream oldFile(opts.oldFilePath);
+	ofstream newFile(opts.newFilePath);
+	sof(newFile, opts.debug);
 	uint lineC = 0;
 	string line;
 	ifcount.push(0);
 	loopcount.push(0);
 	while(getline(oldFile, line)){
 		lineC++;
-		if (show)
+		if (opts.debug)
 			cout << "\t> sending line " << lineC << " to tokener " << endl;
-		vector<morpheme> tok = tokener(line, lineC);
-		if (show) {
+		vector<morpheme> tok = tokener(line, lineC, opts.debug);
+		if (opts.debug) {
 			for (uint i = 0; i < tok.size(); i++) {
 				cout << tok[i].label << endl;
 				cout << tok[i].value << endl;
@@ -733,8 +766,8 @@ int main(int argc, char** argv){
 			cout << "\t> line " << lineC << " tokenized" << endl;
 			cout << "\t> sending line " << lineC << " to lexer" << endl;
 		}
-		vector<morpheme> lex = lexer(tok);
-		if (show) {
+		vector<morpheme> lex = lexer(tok, opts.debug);
+		if (opts.debug) {
 			for (uint i = 0; i < lex.size(); i++) {
 				cout << lex[i].label << endl;
 				cout << lex[i].value << endl;
@@ -744,9 +777,7 @@ int main(int argc, char** argv){
 			cout << "\t> line " << lineC << " lexed" << endl;
 			cout << "\t> sending line " << lineC << " to commital" << endl;
 		}
-		commit(lex, true);
+		commit(lex, true, newFile, opts.debug);
 	}
-	oldFile.close();
-	eof();
-	newFile.close();
+	eof(opts.configFilePath, newFile, opts.debug);
 }
