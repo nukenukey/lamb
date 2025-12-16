@@ -1,14 +1,4 @@
-import rud/std
-import compare
+import std
 start():0
-	next(10, 1)
-;
-next(count, x):8
-	set x count
-	if eq(x, count):
-		exit(10)
-	;
-	if neq(x, count):
-		exit(100)
-	;
+	exit(1)
 ;
