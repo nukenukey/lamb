@@ -2,9 +2,7 @@
 
         lamb is a programming language I authored as an exercise to learn more about programming languages, compiler design, and deepen my understanding of computer science.
 
-        lamb is not a professional product and should not be used as if it is.
-
-        *I do not recommend usage of lamb for important work*
+        lamb is not a professional project and should not be used as if it is.
 
 * purpose of files
 
@@ -40,9 +38,21 @@
                 You should have received a copy of the GNU General Public License
                 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+* usage
+
+	- if you have cloned the repository, you can use the command `g++ lamb.cpp -o lamb' to compile the compiler
+
+	- after you have done that, you can use the command `./lamb -f src.lmb -o src.asm -f lamb.conf' to compile the given source code.
+
+	  - the -f flag specifies the incoming lamb source file.
+
+	  - the -o flag specifies the file to write the compiled assembly into.
+
+	  - the -c flag specifies the lamb configuration file, this tells the compiler where to find the lamb library.
+
 * the future
 
-        - lamb is technically already turing complete and with college starting up I have less time to work on it. That being said, I still want to improve lamb and make a more capable compiler
+        - lamb is technically already turing complete and with college starting up I have less time to work on it. That being said, I still want to improve lamb and make a more capable language.
 
         - features to come
 
