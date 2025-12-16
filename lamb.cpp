@@ -376,10 +376,13 @@ void importPls(string in, bool debug, ifstream &configFile, ofstream &newFile) {
 	if (!configFile.is_open()) {
 		fatal("config file does not exist (/etc/lamb.conf unless specified otherwise)");
 	}
+	string line;
 	string path;
-	while (getline(configFile, path)) {
-		if (path.substr(0, path.find(" ")).compare("lib") == 0) {
-			path = path.substr(path.find(" ") + 1);
+	while (getline(configFile, line)) {
+		if (line.compare("") == 0)
+			continue;
+		if (line.substr(0, line.find(" ")).compare("lib") == 0) {
+			path = line.substr(line.find(" ") + 1) + "/";
 		}
 	}
 	if (path.empty()) {
@@ -641,7 +644,7 @@ void commit(vector<morpheme> in, bool addLineIfNeeded, ofstream &newFile, bool d
 
 void sof(ofstream &newFile, bool debug) {
 	newFile << "section .text" << endl;
-	newFile << "global start" << endl;
+	newFile << "global _start" << endl;
 	if (debug)
 		cout << "\t> start of file" << endl;
 }
@@ -674,7 +677,7 @@ void eof(string configFilePath, ofstream &newFile, bool debug) {
 	newFile << "cmp [origin], rbp" << endl;
 	newFile << "jne exit" << endl;
  // if stack base pointer does not match origin, jump to _exit and unset stack again
-	newFile << "mov rdi, r8" << endl;
+	// newFile << "mov rdi, r8" << endl;
 	newFile << "mov rax, 60" << endl;
  // exit with 
 	newFile << "syscall" << endl;
