@@ -1,8 +1,0 @@
-\ because backslashes now work at line terminators in tokenizaiton, they also work as comments
-start():1
-  :0  \ stores 0 in start
-  next() \ calls next()
-;  \ closes the stack frame
-next():null  \ no space in heap allocated for next
-  !start  \ puts the value of start into register r8, r8 is moved into rdi at the end of the program
-;
