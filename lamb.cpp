@@ -383,7 +383,7 @@ void importPls(string in, bool debug, ifstream &configFile, ofstream &newFile) {
 		}
 	}
 	if (path.empty()) {
-		fatal("config file must have `\"homeDirec\": \"/path/to/lamb/lib\"`");
+		fatal("config file must have `lib /path/to/lamb/lib`");
 	}
 	for (string t; (bool)(in.find(".") % 1); t = in.substr(0, in.find("."))) {
 		in = in.substr(in.find(".") + 1);
