@@ -56,6 +56,8 @@
 
 	- then, to run the compiled binary, use `./src'
 
+	- nasm and ld are dependancies for this project and it will not function without them
+
 * the future
 
         - lamb is technically already turing complete and with college starting up I have less time to work on it. That being said, I still want to improve lamb and make a more capable language.
