@@ -66,10 +66,6 @@
 
 	- then, to run the compiled binary, use `./src'
 
-	- nasm and ld are dependancies for this project and it will not function without them
-
-	- to compile the given source code, (after the installation process) you can run `./lamb -f src.lmb -o src.asm -c lamb.conf' in the lamb directory.
-
 * the future
 
         - lamb is technically already turing complete and with college starting up I have less time to work on it. That being said, I still want to improve lamb and make a more capable language.
