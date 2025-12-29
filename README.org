@@ -18,7 +18,7 @@
 
         3) README.org
 
-           guess
+           this file
 
         4) [[./LICENSE][LICENSE]]
 
@@ -37,6 +37,18 @@
                 GNU General Public License for more details.
                 You should have received a copy of the GNU General Public License
                 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+* installation
+
+	1) lamb has a few dependancies, those being a C++ compiler, nasm, and a linker and loader (ld will do nicely if available)
+
+	   - a posix shell can also be used to run the install_lamb_conf.sh shell script, but it is not strictly necessary.
+
+	2) clone the git repository and cd into it.
+
+	3) compile lamb.cpp. If you are using g++ you can run `g++ lamb.cpp -o lamb'
+
+	4) create a lamb.conf file by running `sh install_lamb_conf.sh'
 
 * usage
 
@@ -57,6 +69,8 @@
 	- then, to run the compiled binary, use `./src'
 
 	- nasm and ld are dependancies for this project and it will not function without them
+
+	- to compile the given source code, (after the installation process) you can run `./lamb -f src.lmb -o src.asm -c lamb.conf' in the lamb directory.
 
 * the future
 
