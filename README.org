@@ -52,9 +52,7 @@
 
 * usage
 
-	- if you have cloned the repository, you can use the command `g++ lamb.cpp -o lamb' to compile the compiler
-
-	- after you have done that, you can use the command `./lamb -f src.lmb -o src.asm -f lamb.conf' to compile the given source code.
+	- you can use the command `./lamb -f src.lmb -o src.asm -f lamb.conf' to compile the given source code.
 
 	  - the -f flag specifies the incoming lamb source file.
 
